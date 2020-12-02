@@ -11,10 +11,9 @@ fn main() {
             System::new("test").block_on(async {
                 let client = Client::default();
 
-                let mut some_bool = true;
                 let mut attack_fit = Vec::new();
                 for _ in 0..10_000 {
-                    attack_fit.push(attack(&client, some_bool))
+                    attack_fit.push(attack(&client));
                 }
                 future::join_all(attack_fit).await;
             });
@@ -28,14 +27,10 @@ fn main() {
     }
 }
 
-async fn attack(client: &Client, status: bool) {
-    let mut count = 0;
-    count += 1;
-    while status == true {
-        let _ = client
-            .get("http://localhost:5000") // <- Create request builder
-            .header("User-Agent", "Actix-web")
-            .send() // <- Send http request
-            .await;
-    }
+async fn attack(client: &Client) {
+    let _ = client
+        .get("http://localhost:5000") // <- Create request builder
+        .header("User-Agent", "Actix-web")
+        .send() // <- Send http request
+        .await;
 }

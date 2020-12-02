@@ -12,3 +12,5 @@ actix-rt = "1.1.1"
 actix = "0.10"
 futures = "*"
 tokio = { version = "0.3", features = ["sync"]}
+h2 = "*"
+http = "*"

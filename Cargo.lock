@@ -1779,6 +1779,8 @@ dependencies = [
  "actix-rt",
  "awc",
  "futures",
+ "h2",
+ "http",
  "tokio 0.3.4",
 ]
 

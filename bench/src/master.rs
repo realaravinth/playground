@@ -45,18 +45,23 @@ impl Actor for Master {
     type Context = Context<Self>;
 }
 
+async fn start_attack(addr: Addr<Master>) {
+    let s = sup::Sup::default().start();
+    s.send(sup::Attack(addr.clone())).await;
+}
+
 impl Handler<Parallelize> for Master {
     type Result = ();
 
     fn handle(&mut self, _msg: Parallelize, ctx: &mut Self::Context) -> Self::Result {
         println!("Starting...");
-        for _ in 0..self.num_sups {
+        for _ in 0..12 {
             let addr = ctx.address().clone();
             Arbiter::new().exec_fn(|| {
-                Arbiter::spawn(async move {
-                    let sup = sup::Sup::default().start();
-                    sup.send(sup::Attack(addr.clone())).await.unwrap();
-                });
+                let fut = async {
+                    start_attack(addr).await;
+                };
+                Arbiter::spawn(fut);
             });
         }
     }
@@ -67,7 +72,8 @@ impl Handler<Exit> for Master {
     fn handle(&mut self, _msg: Exit, ctx: &mut Self::Context) -> Self::Result {
         println!("{:#?}", self.resp);
 
-        println!("{:#?}", self.reqs);
+        println!("Total requests {:#?}", self.reqs);
+        println!("Requests per second: {:#?}", self.reqs as f32 / 10 as f32);
 
         ctx.stop();
     }

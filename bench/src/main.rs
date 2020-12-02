@@ -56,9 +56,11 @@ fn main() {
 
 async fn run(threads: usize) {
     use actix::clock::delay_for;
-    let time = Duration::new(5, 0);
+    let time = Duration::new(12, 0);
     let master = master::Master::new(threads).start();
     master.send(master::Parallelize).await;
+    println!("timer start");
+
     delay_for(time).await;
     master.send(master::Exit).await;
     System::current().stop();

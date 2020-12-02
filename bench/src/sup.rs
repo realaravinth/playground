@@ -28,14 +28,14 @@ impl Handler<Attack> for Sup {
 
     fn handle(&mut self, msg: Attack, ctx: &mut Self::Context) -> Self::Result {
         let attack = async move {
-            for _ in 0..100000 {
+            for _ in 0..300 {
                 let wrk = worker::Worker::new(msg.0.clone()).start();
                 wrk.send(worker::Attack).await.unwrap();
             }
             println!("1000 workers started");
         }
         .into_actor(self);
-        ctx.spawn(attack);
+        ctx.wait(attack);
     }
 }
 
