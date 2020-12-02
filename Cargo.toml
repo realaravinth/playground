@@ -20,4 +20,4 @@ deadpool-postgres = "0.5"
 deadpool = "0.5"
 
 [workspace]
-members = [ ".", "counter", "bench" ]
+members = [ ".", "counter", "bench", "tb" ]
