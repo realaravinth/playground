@@ -90,14 +90,19 @@ impl Handler<Attack> for Worker {
                 let attack = async move {
                     loop {
                         if let Ok(mut res) = client.get(POW).send().await {
-                            let pow_config: PowConfig = res.json().await.unwrap();
+                            let pow_config: std::result::Result<
+                                PowConfig,
+                                actix_web::client::JsonPayloadError,
+                            > = res.json().await;
 
-                            let payload: Payload = pow_config.into();
+                            if let Ok(pow_config) = pow_config {
+                                let payload: Payload = pow_config.into();
 
-                            if let Ok(r) = client.post(POW).send_json(&payload).await {
-                                let status = r.status().as_u16() as usize;
-                                if let Err(_) = &m_addr.send(master::AddStatus(status)).await {
-                                    &addr.do_send(StopWorker);
+                                if let Ok(r) = client.post(REGISTER).send_json(&payload).await {
+                                    let status = r.status().as_u16() as usize;
+                                    if let Err(_) = &m_addr.send(master::AddStatus(status)).await {
+                                        &addr.do_send(StopWorker);
+                                    }
                                 }
                             }
                         }
@@ -116,11 +121,12 @@ fn gen_pow(difficulty_factor: u32, secret: &str) -> PoW<Vec<u8>> {
     PoW::prove_work(&secret.as_bytes().to_vec(), difficulty).unwrap()
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct Payload {
     username: String,
     password: String,
     pow: PoW<Vec<u8>>,
+    phrase: String,
 }
 
 #[derive(Deserialize)]
@@ -142,6 +148,7 @@ impl Payload {
             username: "aaa".into(),
             password: "aaa".into(),
             pow,
+            phrase: phrase.to_string(),
         }
     }
 }

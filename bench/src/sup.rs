@@ -43,7 +43,6 @@ impl Handler<Attack> for Sup {
                         let wrk = worker::Worker::new(msg.addr.clone()).start();
                         wrk.send(worker::Attack::Static).await.unwrap();
                     }
-                    println!("1000 workers started");
                 }
                 .into_actor(self);
                 ctx.wait(attack);
@@ -54,7 +53,6 @@ impl Handler<Attack> for Sup {
                         let wrk = worker::Worker::new(msg.addr.clone()).start();
                         wrk.send(worker::Attack::WithoutPow).await.unwrap();
                     }
-                    println!("1000 workers started");
                 }
                 .into_actor(self);
                 ctx.wait(attack);
@@ -66,7 +64,6 @@ impl Handler<Attack> for Sup {
                         let wrk = worker::Worker::new(msg.addr.clone()).start();
                         wrk.send(worker::Attack::WithPow).await.unwrap();
                     }
-                    println!("1000 workers started");
                 }
                 .into_actor(self);
                 ctx.wait(attack);

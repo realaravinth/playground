@@ -95,8 +95,8 @@ impl Handler<Parallelize> for Master {
 impl Handler<Exit> for Master {
     type Result = ();
     fn handle(&mut self, _msg: Exit, ctx: &mut Self::Context) -> Self::Result {
-        println!("{:#?}", self.resp);
-
+        println!();
+        println!();
         println!("Total requests {:#?}", self.reqs);
         println!("Requests per second: {:#?}", self.reqs as f32 / 10 as f32);
 
@@ -112,13 +112,13 @@ impl Handler<AddStatus> for Master {
     type Result = ();
 
     fn handle(&mut self, msg: AddStatus, _ctx: &mut Self::Context) -> Self::Result {
-        if self.resp.contains_key(&msg.0) {
-            let val = self.resp.get_mut(&msg.0).unwrap();
-            *val += 1;
-        } else {
-            self.resp.insert(msg.0, 1);
-        }
-
+        //        if self.resp.contains_key(&msg.0) {
+        //            let val = self.resp.get_mut(&msg.0).unwrap();
+        //            *val += 1;
+        //        } else {
+        //            self.resp.insert(msg.0, 1);
+        //        }
+        //
         self.reqs += 1;
     }
 }

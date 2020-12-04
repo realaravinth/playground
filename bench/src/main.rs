@@ -23,7 +23,7 @@ fn main() {
                 .long("--static")
                 .value_name("static")
                 .help("hits static endpoint")
-                .takes_value(true),
+                .takes_value(false),
         )
         .arg(
             Arg::with_name("non-pow")
@@ -31,7 +31,7 @@ fn main() {
                 .short("-n")
                 .long("--npow")
                 .value_name("npow")
-                .takes_value(true),
+                .takes_value(false),
         )
         .arg(
             Arg::with_name("pow")
@@ -39,18 +39,16 @@ fn main() {
                 .short("-p")
                 .long("--pow")
                 .value_name("pow")
-                .takes_value(true),
+                .takes_value(false),
         )
         .get_matches();
 
-    let mut atype: AttackType = AttackType::Static;
-    if let Some(_) = matches.value_of("static") {
+    let atype;
+    if matches.is_present("static") {
         atype = AttackType::Static
-    }
-    if let Some(_) = matches.value_of("non-pow") {
+    } else if matches.is_present("non-pow") {
         atype = AttackType::WithoutPow
-    }
-    if let Some(_) = matches.value_of("pow") {
+    } else {
         atype = AttackType::WithPow
     }
 
@@ -71,7 +69,6 @@ async fn run(threads: usize, atype: AttackType) {
     let time = Duration::new(12, 0);
     let master = master::Master::new(threads).start();
     master.send(master::Parallelize(atype)).await;
-    println!("timer start");
 
     delay_for(time).await;
     master.send(master::Exit).await;
