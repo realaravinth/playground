@@ -1,9 +1,9 @@
 use actix::prelude::*;
-use actix_web::client::Client;
 
 use std::collections::HashMap;
 
 use super::sup;
+use super::sup::AttackType;
 
 #[derive(Message)]
 #[rtype(result = "()")]
@@ -11,7 +11,7 @@ pub struct SubscribeSup(pub Addr<sup::Sup>);
 
 #[derive(Message)]
 #[rtype(result = "()")]
-pub struct Parallelize;
+pub struct Parallelize(pub sup::AttackType);
 
 #[derive(Message)]
 #[rtype(result = "()")]
@@ -45,24 +45,49 @@ impl Actor for Master {
     type Context = Context<Self>;
 }
 
-async fn start_attack(addr: Addr<Master>) {
+async fn start_attack(addr: Addr<Master>, atype: sup::AttackType) {
     let s = sup::Sup::default().start();
-    s.send(sup::Attack(addr.clone())).await;
+    let msg = sup::Attack {
+        addr,
+        attack_type: atype,
+    };
+    s.send(msg).await;
 }
 
 impl Handler<Parallelize> for Master {
     type Result = ();
 
-    fn handle(&mut self, _msg: Parallelize, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: Parallelize, ctx: &mut Self::Context) -> Self::Result {
         println!("Starting...");
         for _ in 0..12 {
             let addr = ctx.address().clone();
-            Arbiter::new().exec_fn(|| {
-                let fut = async {
-                    start_attack(addr).await;
-                };
-                Arbiter::spawn(fut);
-            });
+            match msg.0 {
+                AttackType::Static => {
+                    Arbiter::new().exec_fn(|| {
+                        let fut = async {
+                            start_attack(addr, AttackType::Static).await;
+                        };
+                        Arbiter::spawn(fut);
+                    });
+                }
+                AttackType::WithPow => {
+                    Arbiter::new().exec_fn(|| {
+                        let fut = async {
+                            start_attack(addr, AttackType::WithPow).await;
+                        };
+                        Arbiter::spawn(fut);
+                    });
+                }
+
+                AttackType::WithoutPow => {
+                    Arbiter::new().exec_fn(|| {
+                        let fut = async {
+                            start_attack(addr, AttackType::WithoutPow).await;
+                        };
+                        Arbiter::spawn(fut);
+                    });
+                }
+            }
         }
     }
 }
